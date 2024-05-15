@@ -1,0 +1,43 @@
+version: "3"
+
+services:
+  mysql:
+    container_name: tunisia-camp-mysql-keycloak
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: keycloak
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - tunisia-camp-network
+
+  keycloak:
+    container_name: tunisia-camp-keycloak
+    image: quay.io/keycloak/keycloak:22.0.0
+    environment:
+      KC_DB: mysql
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_URL_HOST: mysql
+      KC_DB_URL_PORT: 3306
+      KC_DB_USERNAME: root
+      KC_DB_PASSWORD: root
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME_STRICT: "false"
+    ports:
+      - 8080:8080
+    entrypoint: /opt/keycloak/bin/kc.sh start-dev --auto-build
+    depends_on:
+      - mysql
+    networks:
+      - tunisia-camp-network
+
+networks:
+  tunisia-camp-network:
+    driver: bridge
+volumes:
+  mysql_data:
+    driver: local
